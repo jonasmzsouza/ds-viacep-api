@@ -2,12 +2,16 @@ import './styles.css';
 
 import ResultCard from 'components/ResultCard';
 import { useState } from 'react';
+import { Address } from 'types/address';
+import axios from 'axios';
 
 type FormData = {
   cep: string;
 };
 
 const CepSearch = () => {
+  const [address, setAddress] = useState<Address>();
+
   const [formData, setFormData] = useState<FormData>({
     cep: '',
   });
@@ -21,7 +25,15 @@ const CepSearch = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(formData);
+
+    axios
+      .get(`https://viacep.com.br/ws/${formData.cep}/json/`)
+      .then((response) => {
+        setAddress(response.data);
+      })
+      .catch((error) => {
+        setAddress(undefined);
+      });
   };
 
   return (
@@ -44,10 +56,14 @@ const CepSearch = () => {
           </div>
         </form>
 
-        <ResultCard title="Logradouro" description="Rua X" />
-        <ResultCard title="Bairro" description="Bairro X" />
-        <ResultCard title="Localidade" description="Localidade x" />
-        <ResultCard title="UF" description="UF x" />
+        {address && (
+          <>
+            <ResultCard title="Logradouro" description={address.logradouro} />
+            <ResultCard title="Bairro" description={address.bairro} />
+            <ResultCard title="Localidade" description={address.localidade} />
+            <ResultCard title="UF" description={address.uf} />
+          </>
+        )}
       </div>
     </div>
   );
